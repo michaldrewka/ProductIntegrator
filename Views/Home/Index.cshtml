@@ -1,0 +1,53 @@
+﻿@model List<ProductIntegrator.Models.UnifiedProduct>
+
+@{
+    ViewData["Title"] = "Product List";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+@if (TempData["Message"] != null)
+{
+    <div>@TempData["Message"]</div>
+}
+
+<table>
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Image</th>
+        <th>Variants</th>
+        <th>Flag</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var product in Model)
+    {
+        <tr>
+            <td>@product.Name</td>
+            <td>@product.Description</td>
+            <td>
+                @if (!string.IsNullOrEmpty(product.ImageUrl))
+                {
+                    <img src="@product.ImageUrl" alt="Product Image" width="100" />
+                }
+            </td>
+            <td>
+                <ul>
+                    @foreach (var variant in product.Variants)
+                    {
+                        <li>@variant.Sku - @variant.Quantity (In stock: @variant.InStock)</li>
+                    }
+                </ul>
+            </td>
+            <td>
+                <form method="post" action="/Home/FlagProduct">
+                    <input type="hidden" name="productName" value="@product.Name" />
+                    <button type="submit">Flag</button>
+                </form>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
