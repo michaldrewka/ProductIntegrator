@@ -5,27 +5,27 @@ namespace ProductIntegrator.Models
     public class Product3
     {
         [XmlElement("dlugi_opis")]
-        public string DlugiOpis { get; set; }
+        public string Description { get; set; }
 
         [XmlElement("zdjecia")]
-        public Zdjecia Zdjecia { get; set; }
+        public Images Images { get; set; }
 
         [XmlElement("nazwa")]
-        public string Nazwa { get; set; }
+        public string Name { get; set; }
 
         [XmlElement("kod")]
         public string Kod { get; set; }
     }
 
-    public class Zdjecie
+    public class Image
     {
         [XmlElement("url")]
         public string Url { get; set; }
     }
 
-    public class Zdjecia
+    public class Images
     {
         [XmlElement("zdjecie")]
-        public List<Zdjecie> Zdjecie { get; set; }
+        public List<Image> Zdjecie { get; set; }
     }
 }

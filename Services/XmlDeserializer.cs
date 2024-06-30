@@ -1,23 +1,51 @@
-﻿using System.Xml.Serialization;
+﻿using System.Xml;
+using System.Xml.Linq;
+using System.Xml.Serialization;
 using ProductIntegrator.Models;
 
 namespace ProductIntegrator.Services
 {
     public static class XmlDeserializer
     {
-        // Method to deserialize XML data from supplier 1
-        public static List<Products1> DeserializeProvider1(string[] filePaths)
+        public static List<UnifiedProduct> DeserializeProvider1(string[] filePaths)
         {
-            List<Products1> productsList = new List<Products1>();
+            var productsList = new List<UnifiedProduct>();
 
             foreach (var filePath in filePaths)
             {
-                XmlSerializer serializer = new XmlSerializer(typeof(Offer));
-                using (FileStream fileStream = new FileStream(filePath, FileMode.Open))
-                {
-                    var offer = (Offer)serializer.Deserialize(fileStream);
-                    productsList.Add((Products1)offer.Products);
-                }
+                // Load the XML file into an XDocument
+                var doc = XDocument.Load(filePath);
+
+                // Get the <name> element with xml:lang="pol"
+                var nameElement = doc
+                    .Descendants("name")
+                    .FirstOrDefault(e => e.Attribute(XNamespace.Xml + "lang")?.Value == "pol");
+
+                // Get the <short_desc> element with xml:lang="pol"
+                var descriptionElement = doc
+                    .Descendants("short_desc")
+                    .FirstOrDefault(e => e.Attribute(XNamespace.Xml + "lang")?.Value == "pol");
+
+                // Get the <icon> element 
+                var imageUrl = doc
+                    .Descendants("icon")
+                    .FirstOrDefault()
+                    ?.Attribute("url");
+
+
+                // Extract the text content inside the CDATA section
+                var productName = nameElement?.Value;
+
+                    if (productName == null) continue;
+                    var productSupplier1 = new UnifiedProduct
+                    {
+                        Name = productName,
+                        Description = descriptionElement?.Value,
+                        ImageUrl = imageUrl?.Value,
+                        Variants = new List<Variant>()
+                    };
+
+                    productsList.Add(productSupplier1);
             }
 
             return productsList;
@@ -56,5 +84,5 @@ namespace ProductIntegrator.Services
 
             return productsList;
         }
-    }
+}
 }

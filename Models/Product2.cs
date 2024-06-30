@@ -12,5 +12,8 @@ namespace ProductIntegrator.Models
 
         [XmlElement("in_stock")]
         public bool InStock { get; set; }
+
+        [XmlElement("name")]
+        public string Name { get; set; }
     }
 }
