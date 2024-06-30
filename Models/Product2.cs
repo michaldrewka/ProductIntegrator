@@ -8,7 +8,7 @@ namespace ProductIntegrator.Models
         public string Sku { get; set; }
 
         [XmlElement("qty")]
-        public int Qty { get; set; }
+        public string Qty { get; set; }
 
         [XmlElement("in_stock")]
         public bool InStock { get; set; }

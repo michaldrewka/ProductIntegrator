@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ProductIntegrator.Services;
+using System.IO;
 
 namespace ProductIntegrator.Controllers
 {
@@ -13,7 +14,7 @@ namespace ProductIntegrator.Controllers
             var supplier2Path = Path.Combine(appDataPath, "Supplier2");
             var supplier3Path = Path.Combine(appDataPath, "Supplier3");
 
-            var products1 = XmlDeserializer.DeserializeProvider1(Directory.GetFiles(supplier1Path, "*.xml"));
+            var products1 = XmlDeserializer.DeserializeProvider1(Path.Combine(supplier1Path, "dostawca1plik1.xml"), Path.Combine(supplier1Path, "dostawca1plik2.xml"));
             var products2 = XmlDeserializer.DeserializeProvider2(Directory.GetFiles(supplier2Path, "*.xml"));
             var products3 = XmlDeserializer.DeserializeProvider3(Directory.GetFiles(supplier3Path, "*.xml"));
 

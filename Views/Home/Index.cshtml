@@ -37,7 +37,7 @@
                 <ul>
                     @foreach (var variant in product.Variants)
                     {
-                        <li>@variant.Quantity (In stock: )</li>
+                            <li>@variant.VariantType (In stock: @variant.Quantity)</li>
                     }
                 </ul>
             </td>

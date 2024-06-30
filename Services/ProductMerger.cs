@@ -9,19 +9,7 @@ namespace ProductIntegrator.Services
         {
             var unifiedProducts = products1List;
 
-                                  /*= (from products1 in products1List
-                                  from product in products1.Product
-                                  select new UnifiedProduct
-                                  {
-                                      Description = null, // Not available in provider 1
-                                      ImageUrl = null, // Not available in provider 1
-                                      Name = null, // Not available in provider 1
-                                      Variants = product.Sizes.SizeList.Select(s => new Variant
-                                          {
-                                              Quantity = s.Quantity
-                                          })
-                                          .ToList()
-                                  }).ToList();*/
+
 
                                   unifiedProducts.AddRange(from products2 in products2List
                                       from product in products2.Product
@@ -44,7 +32,7 @@ namespace ProductIntegrator.Services
                     {
                         new Variant
                         {
-                            Quantity = 0 // Quantity not provided in provider 3
+                            Quantity = "0" // Quantity not provided in provider 3
                         }
                     }
                 });

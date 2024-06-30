@@ -1,4 +1,4 @@
-﻿using System.Xml;
+﻿using System.Reflection.Metadata;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 using ProductIntegrator.Models;
@@ -7,45 +7,74 @@ namespace ProductIntegrator.Services
 {
     public static class XmlDeserializer
     {
-        public static List<UnifiedProduct> DeserializeProvider1(string[] filePaths)
+        public static List<UnifiedProduct> DeserializeProvider1(string file1Path, string file2Path)
         {
             var productsList = new List<UnifiedProduct>();
 
-            foreach (var filePath in filePaths)
+            // Load the XML file into an XDocument
+            var xml1  = XDocument.Load(file1Path);
+            var listOfProducts = xml1.Descendants("product")
+                .Select(p => new
+                {
+                    Id = p.Attribute("id")?.Value,
+                    Sizes = p.Descendants("size")
+                        .Select(s => new
+                        {
+                            SizeId = s.Attribute("id")?.Value,
+                            Quantity = s.Element("stock")?.Attribute("quantity")?.Value
+                        })
+                        .ToList()
+                })
+                .ToList();
+            
+            var xml2 = XDocument.Load(file2Path);
+
+            var products = xml2.Descendants("product")
+                .Select(p => new
+                {
+                    Id = (string)p.Attribute("id")!,
+                    Name = (string)p
+                        .Descendants("name")
+                        .FirstOrDefault(n => (string)n.Attribute(XNamespace.Xml + "lang")! == "pol")!,
+                    ShortDesc = (string)p
+                        .Descendants("short_desc")
+                        .FirstOrDefault(d => (string)d.Attribute(XNamespace.Xml + "lang")! == "pol")!,
+                    IconUrl = p.Descendants("icon")
+                        .Select(i => (string)i.Attribute("url")!)
+                        .FirstOrDefault()
+                })
+                .ToList();
+
+            // Join the two lists on Id
+            var joinedProducts = from p1 in listOfProducts
+                join p2 in products on p1.Id equals p2.Id
+                select new
+                {
+                    p1.Id,
+                    p1.Sizes,
+                    p2.Name,
+                    p2.ShortDesc,
+                    p2.IconUrl
+                };
+
+            // Create UnifiedProduct objects and populate productsList
+            foreach (var product in joinedProducts)
             {
-                // Load the XML file into an XDocument
-                var doc = XDocument.Load(filePath);
+                var variants = product.Sizes.Select(variant => new Variant()
+                {
+                    Quantity = variant.Quantity,
+                    VariantType = "Size: " + variant.SizeId
+                }).ToList();
 
-                // Get the <name> element with xml:lang="pol"
-                var nameElement = doc
-                    .Descendants("name")
-                    .FirstOrDefault(e => e.Attribute(XNamespace.Xml + "lang")?.Value == "pol");
+                var unifiedProduct = new UnifiedProduct
+                {
+                    Name = product.Name,
+                    Description = product.ShortDesc,
+                    ImageUrl = product.IconUrl,
+                    Variants = variants
+                };
 
-                // Get the <short_desc> element with xml:lang="pol"
-                var descriptionElement = doc
-                    .Descendants("short_desc")
-                    .FirstOrDefault(e => e.Attribute(XNamespace.Xml + "lang")?.Value == "pol");
-
-                // Get the <icon> element 
-                var imageUrl = doc
-                    .Descendants("icon")
-                    .FirstOrDefault()
-                    ?.Attribute("url");
-
-
-                // Extract the text content inside the CDATA section
-                var productName = nameElement?.Value;
-
-                    if (productName == null) continue;
-                    var productSupplier1 = new UnifiedProduct
-                    {
-                        Name = productName,
-                        Description = descriptionElement?.Value,
-                        ImageUrl = imageUrl?.Value,
-                        Variants = new List<Variant>()
-                    };
-
-                    productsList.Add(productSupplier1);
+                productsList.Add(unifiedProduct);
             }
 
             return productsList;
