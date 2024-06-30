@@ -2,7 +2,7 @@
 
 namespace ProductIntegrator.Models
 {
-    public class Produkt
+    public class Product3
     {
         [XmlElement("dlugi_opis")]
         public string DlugiOpis { get; set; }

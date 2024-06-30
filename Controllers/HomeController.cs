@@ -9,9 +9,13 @@ namespace ProductIntegrator.Controllers
         {
             // Load data from XML files located in the App_Data directory
             var appDataPath = Path.Combine(Directory.GetCurrentDirectory(), "App_Data");
-            var products1 = XmlDeserializer.DeserializeProvider1(Path.Combine(appDataPath, "dostawca1plik1.xml"));
-            var products2 = XmlDeserializer.DeserializeProvider2(Path.Combine(appDataPath, "dostawca2plik1.xml"));
-            var products3 = XmlDeserializer.DeserializeProvider3(Path.Combine(appDataPath, "dostawca3plik1.xml"));
+            var supplier1Path = Path.Combine(appDataPath, "Supplier1");
+            var supplier2Path = Path.Combine(appDataPath, "Supplier2");
+            var supplier3Path = Path.Combine(appDataPath, "Supplier3");
+
+            var products1 = XmlDeserializer.DeserializeProvider1(Directory.GetFiles(supplier1Path, "*.xml"));
+            var products2 = XmlDeserializer.DeserializeProvider2(Directory.GetFiles(supplier2Path, "*.xml"));
+            var products3 = XmlDeserializer.DeserializeProvider3(Directory.GetFiles(supplier3Path, "*.xml"));
 
             // Merge the data into a unified product list
             var unifiedProducts = ProductMerger.MergeProducts(products1, products2, products3);

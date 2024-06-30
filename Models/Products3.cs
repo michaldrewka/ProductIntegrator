@@ -3,9 +3,9 @@
 namespace ProductIntegrator.Models
 {
     [XmlRoot("produkty")]
-    public class Produkty3
+    public class Products3
     {
         [XmlElement("produkt")]
-        public List<Produkt> Produkt { get; set; }
+        public List<Product3> Produkt { get; set; }
     }
 }

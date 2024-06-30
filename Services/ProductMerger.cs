@@ -5,53 +5,37 @@ namespace ProductIntegrator.Services
     public static class ProductMerger
     {
         // Method to merge products from different providers into a unified list
-        public static List<UnifiedProduct> MergeProducts(Products1 products1, Products2 products2, Produkty3 produkty3)
+        public static List<UnifiedProduct> MergeProducts(List<Products1> products1List, List<Products2> products2List, List<Products3> produkty3List)
         {
-            List<UnifiedProduct> unifiedProducts = new List<UnifiedProduct>();
-
-            // Process data from provider 1
-            foreach (var product in products1.Product)
-            {
-                UnifiedProduct unifiedProduct = new UnifiedProduct
+            var unifiedProducts = (from products1 in products1List
+                from product in products1.Product
+                select new UnifiedProduct
                 {
-                    Description = null,  // Not available in provider 1
-                    ImageUrl = null,     // Not available in provider 1
-                    Name = null,         // Not available in provider 1
+                    Description = null, // Not available in provider 1
+                    ImageUrl = null, // Not available in provider 1
+                    Name = null, // Not available in provider 1
                     Variants = product.Sizes.SizeList.Select(s => new Variant
-                    {
-                        Sku = s.Code,
-                        InStock = true,   // Assume in stock based on provided data
-                        Quantity = s.Quantity
-                    }).ToList()
-                };
-                unifiedProducts.Add(unifiedProduct);
-            }
-
-            // Process data from provider 2
-            foreach (var product in products2.Product)
-            {
-                UnifiedProduct unifiedProduct = new UnifiedProduct
-                {
-                    Description = null,  // Not available in provider 2
-                    ImageUrl = null,     // Not available in provider 2
-                    Name = null,         // Not available in provider 2
-                    Variants = new List<Variant>
-                    {
-                        new Variant
                         {
-                            Sku = product.Sku,
-                            InStock = product.InStock,
-                            Quantity = product.Qty
-                        }
-                    }
-                };
-                unifiedProducts.Add(unifiedProduct);
-            }
+                            Sku = s.Code,
+                            InStock = true, // Assume in stock based on provided data
+                            Quantity = s.Quantity
+                        })
+                        .ToList()
+                }).ToList();
 
-            // Process data from provider 3
-            foreach (var product in produkty3.Produkt)
-            {
-                UnifiedProduct unifiedProduct = new UnifiedProduct
+            unifiedProducts.AddRange(from products2 in products2List
+                from product in products2.Product
+                select new UnifiedProduct
+                {
+                    Description = null, // Not available in provider 2
+                    ImageUrl = null, // Not available in provider 2
+                    Name = null, // Not available in provider 2
+                    Variants = new List<Variant> { new Variant { Sku = product.Sku, InStock = product.InStock, Quantity = product.Qty } }
+                });
+
+            unifiedProducts.AddRange(from produkty3 in produkty3List
+                from product in produkty3.Produkt
+                select new UnifiedProduct
                 {
                     Description = product.DlugiOpis,
                     ImageUrl = product.Zdjecia.Zdjecie.FirstOrDefault()?.Url,
@@ -60,14 +44,12 @@ namespace ProductIntegrator.Services
                     {
                         new Variant
                         {
-                            Sku = product.Kod,  // Assuming 'kod' is SKU
-                            InStock = true,     // Assume in stock based on provided data
-                            Quantity = 0       // Quantity not provided in provider 3
+                            Sku = product.Kod, // Assuming 'kod' is SKU
+                            InStock = true, // Assume in stock based on provided data
+                            Quantity = 0 // Quantity not provided in provider 3
                         }
                     }
-                };
-                unifiedProducts.Add(unifiedProduct);
-            }
+                });
 
             return unifiedProducts;
         }
