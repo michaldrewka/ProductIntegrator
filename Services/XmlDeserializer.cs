@@ -8,10 +8,13 @@ namespace ProductIntegrator.Services
         // Method to deserialize XML data from provider 1
         public static Products1 DeserializeProvider1(string filePath)
         {
-            XmlSerializer serializer = new XmlSerializer(typeof(Products1));
+            var serializer = new XmlSerializer(typeof(Offer));
             using (FileStream fileStream = new FileStream(filePath, FileMode.Open))
             {
-                return (Products1)serializer.Deserialize(fileStream);
+                {
+                    var offer = (Offer)serializer.Deserialize(fileStream);
+                    return (Products1)offer.Products;
+                }
             }
         }
 

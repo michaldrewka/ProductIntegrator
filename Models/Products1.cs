@@ -2,7 +2,7 @@
 
 namespace ProductIntegrator.Models
 {
-    [XmlRoot("offer")]
+    [XmlRoot("products")]
     public class Products1
     {
         [XmlElement("product")]
