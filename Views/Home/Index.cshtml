@@ -11,43 +11,193 @@
     <div>@TempData["Message"]</div>
 }
 
-<table>
-    <thead>
-    <tr>
-        <th>Name</th>
-        <th>Description</th>
-        <th>Image</th>
-        <th>Variants</th>
-        <th>Flag</th>
-    </tr>
-    </thead>
-    <tbody>
-    @foreach (var product in Model)
-    {
-        <tr>
-            <td>@product.Name</td>
-            <td>@product.Description</td>
-            <td>
-                @if (!string.IsNullOrEmpty(product.ImageUrl))
-                {
-                    <img src="@product.ImageUrl" alt="Product Image" width="100" />
-                }
-            </td>
-            <td>
-                <ul>
-                    @foreach (var variant in product.Variants)
-                    {
-                            <li>@variant.VariantType (In stock: @variant.Quantity)</li>
-                    }
-                </ul>
-            </td>
-            <td>
-                <form method="post" action="/Home/FlagProduct">
-                    <input type="hidden" name="productName" value="@product.Name" />
-                    <button type="submit">Flag</button>
-                </form>
-            </td>
-        </tr>
+<style>
+    .table-container {
+        width: 100%;
+        overflow-x: auto;
     }
-    </tbody>
-</table>
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+
+    th, td {
+        border: 1px solid #ddd;
+        padding: 12px;
+        text-align: left;
+        vertical-align: top;
+        max-width: 200px; /* Adjust as needed */
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    th {
+        background-color: #f4f4f4;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    tr:hover {
+        background-color: #f1f1f1;
+    }
+
+    .flagged {
+        background-color: #d9edf7;
+    }
+
+    button {
+        padding: 8px 16px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 4px;
+    }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        button:hover:enabled {
+            background-color: #0056b3;
+        }
+
+    .unflag-btn {
+        background-color: #ff5733;
+    }
+
+        .unflag-btn:hover:enabled {
+            background-color: #c44124;
+        }
+
+    .description-column {
+        max-width: 400px; /* Adjust as needed */
+        white-space: normal; /* Allow wrapping */
+        overflow: visible; /* Allow text to wrap */
+    }
+</style>
+
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th class="description-column">Description</th>
+                <th>Image</th>
+                <th>Variant</th>
+                <th>Quantity</th>
+                <th>Flag</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var product in Model)
+            {
+                <tr id="row-@product.Name">
+                    <td>@product.Name</td>
+                    <td class="description-column">@Html.Raw(product.Description)</td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(product.ImageUrl))
+                        {
+                            <img src="@product.ImageUrl" alt="Product Image" width="100" />
+                        }
+                    </td>
+                    <td>
+                        <ul>
+                            @foreach (var parameter in product.Parameters)
+                            {
+                                <li>
+                                    @parameter.Key:
+                                    <ul>
+                                        @foreach (var value in parameter.Value)
+                                        {
+                                            <li>@value</li>
+                                        }
+                                    </ul>
+                                </li>
+                            }
+                        </ul>
+                    </td>
+                    <td>@product.Quantity</td>
+                    <td>
+                        <form method="post" action="/Home/FlagProduct" onsubmit="flagRow(event, '@product.Name')">
+                            <input type="hidden" name="productName" value="@product.Name" />
+                            <button type="submit" id="flag-btn-@product.Name">Flag</button>
+                        </form>
+                        <form method="post" action="/Home/UnflagProduct" onsubmit="unflagRow(event, '@product.Name')" style="display: none;">
+                            <input type="hidden" name="productName" value="@product.Name" />
+                            <button type="submit" id="unflag-btn-@product.Name" class="unflag-btn">Unflag</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function flagRow(event, productName) {
+        event.preventDefault();
+        var flagButton = document.getElementById('flag-btn-' + productName);
+        var unflagForm = flagButton.closest('td').querySelector('form + form');
+
+        flagButton.disabled = true;
+        unflagForm.style.display = 'inline';
+        var row = document.getElementById('row-' + productName);
+        if (row) {
+            row.classList.add('flagged');
+        }
+
+        // Optionally, you can send an AJAX request here to flag the product on the server side
+        var form = event.target;
+        var formData = new FormData(form);
+
+        fetch(form.action, {
+            method: form.method,
+            body: formData
+        }).then(response => {
+            if (response.ok) {
+                console.log('Product flagged successfully');
+            } else {
+                console.error('Error flagging product');
+            }
+        }).catch(error => {
+            console.error('Error flagging product', error);
+        });
+    }
+
+    function unflagRow(event, productName) {
+        event.preventDefault();
+        var unflagButton = document.getElementById('unflag-btn-' + productName);
+        var flagButton = unflagButton.closest('td').querySelector('form > button');
+
+        unflagButton.closest('form').style.display = 'none';
+        flagButton.disabled = false;
+        var row = document.getElementById('row-' + productName);
+        if (row) {
+            row.classList.remove('flagged');
+        }
+
+        // Optionally, you can send an AJAX request here to unflag the product on the server side
+        var form = event.target;
+        var formData = new FormData(form);
+
+        fetch(form.action, {
+            method: form.method,
+            body: formData
+        }).then(response => {
+            if (response.ok) {
+                console.log('Product unflagged successfully');
+            } else {
+                console.error('Error unflagging product');
+            }
+        }).catch(error => {
+            console.error('Error unflagging product', error);
+        });
+    }
+</script>
